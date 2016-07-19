@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd">
+<context:annotation-config/>
+<!-- using Spring provided DriverManager DataSource class which configures driver class and getting connection -->
+<!-- 
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+  <property name="driverClassName" value="org.apache.derby.jdbc.ClientDriver"></property>
+  <property name="url" value="jdbc:derby://localhost:1527//db;create=true"></property>
+</bean>
+ -->
+ 
+<!-- Using DBCP Apache Db connection pooling as data source which provides connection pooling support 
+Creating a new connection for each user can be time consuming (often requiring multiple seconds of clock time), in order to perform 
+a database transaction that might take milliseconds. Opening a connection per user can be unfeasible in a publicly-hosted Internet application 
+where the number of simultaneous users can be very large. Accordingly, developers often wish to share a "pool" of open connections between all of the 
+application's current users. The number of users actually performing a request at any given time is usually a very small percentage of the total number 
+of active users, and during request processing is the only time that a database connection is required. The application itself logs into the DBMS, 
+and handles any user account issues internally.-->
+<!-- Adding commons-dbcp2 and commons-pool2 jars fpor providing connection pool support -->
+<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+  <property name="driverClassName" value="org.apache.derby.jdbc.ClientDriver"></property>
+  <property name="url" value="jdbc:derby://localhost:1527//db;create=true"></property>
+  <property name="initialSize" value="2"></property>
+  <property name="maxTotal" value="5"></property>
+</bean>
+  
+<!--Initializing the jdbctemplate by setting the datasource-->
+<!-- 
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+  <property name="dataSource" ref = "dataSource"></property>
+</bean>
+-->
+<!--Initializing the jdbadaoImpl by setting the datasource-->
+<!-- 
+<bean id="jdbcDaoImpl" class="com.ashok.bharat.DAOImpl.SimpleJdbcDaoImpl">
+  <property name="dataSource" ref = "dataSource"></property>
+</bean>
+ -->
+<!-- <context:component-scan base-package="com.ashok.bharat.DAOImpl"></context:component-scan>-->
+
+<!-- Spring with Hibernate, configuring Sessionfactory Bean -->
+<bean id="hibernateDaoImpl" class="com.ashok.bharat.DAOImpl.HibernateDaoImpl">
+  <property name="sessFact" ref="sessFact"></property>
+</bean>
+<bean id="sessFact" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" scope="singleton">
+  <property name="dataSource" ref="dataSource"/>
+  <property name="packagesToScan" value="com.ashok.bharat.Model"/>
+  <property name="hibernateProperties">
+    <props>
+      <prop key = "dialect">org.hibernate.dialect.DerbyDialect</prop>
+      <prop key = "show_sql">true</prop>
+    </props>
+  </property>
+</bean>
+
+</beans>
